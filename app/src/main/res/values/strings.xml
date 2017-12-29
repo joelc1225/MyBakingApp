@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">My Baking App</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="placeholder_title">Recipe name updated at runtime</string>
+    <string name="ingredient_list_header">Ingredient List</string>
+    <string name="step_number_header">Step</string>
+    <string name="measure_string_format">%1$s %2$s</string>
+</resources>

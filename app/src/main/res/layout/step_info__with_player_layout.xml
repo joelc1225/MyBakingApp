@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <com.google.android.exoplayer2.ui.SimpleExoPlayerView
+        android:id="@+id/simple_exo_player"
+        android:layout_width="match_parent"
+        android:layout_height="260dp"
+        android:layout_marginTop="60dp">
+
+    </com.google.android.exoplayer2.ui.SimpleExoPlayerView>
+
+    <TextView
+        android:id="@+id/description_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/simple_exo_player"
+        android:layout_centerInParent="true"
+        android:layout_margin="24dp"
+        android:textSize="18sp"
+        tools:text="This is a step description for the current step. Mix the ingredients and mix it all together. Then crack the eggs and mix it in along with the oil and batter and everything else. blah blah blah" />
+
+    <Button
+        android:id="@+id/previous_button"
+        android:layout_width="90dp"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"/>
+
+    <Button
+        android:id="@+id/next_button"
+        android:layout_width="90dp"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="16dp"/>
+
+
+</RelativeLayout>

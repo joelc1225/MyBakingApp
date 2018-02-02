@@ -45,17 +45,6 @@ public class Recipe implements Parcelable {
 
     };
 
-    protected Recipe(Parcel in) {
-        this.id = ((Long) in.readValue((Long.class.getClassLoader())));
-        this.name = ((String) in.readValue((String.class.getClassLoader())));
-        ingredients = new ArrayList<>();
-        in.readList(this.ingredients, (com.joelcamargo.mybakingapp.model.Ingredient.class.getClassLoader()));
-        steps = new ArrayList<>();
-        in.readList(this.steps, (com.joelcamargo.mybakingapp.model.Step.class.getClassLoader()));
-        this.servings = ((Long) in.readValue((Long.class.getClassLoader())));
-        this.image = ((String) in.readValue((String.class.getClassLoader())));
-    }
-
     /**
      * No args constructor for use in serialization
      */
@@ -71,13 +60,24 @@ public class Recipe implements Parcelable {
      * @param steps
      */
     public Recipe(Long id, String name, List<Ingredient> ingredients, List<Step> steps, Long servings, String image) {
-        super();
         this.id = id;
         this.name = name;
         this.ingredients = ingredients;
         this.steps = steps;
         this.servings = servings;
         this.image = image;
+    }
+
+    // CONSTRUCTOR OF EXPANDABLE RECYCLERVIEW LIBRARY
+    protected Recipe(Parcel in) {
+        this.id = ((Long) in.readValue((Long.class.getClassLoader())));
+        this.name = ((String) in.readValue((String.class.getClassLoader())));
+        ingredients = new ArrayList<>();
+        in.readList(this.ingredients, (com.joelcamargo.mybakingapp.model.Ingredient.class.getClassLoader()));
+        steps = new ArrayList<>();
+        in.readList(this.steps, (com.joelcamargo.mybakingapp.model.Step.class.getClassLoader()));
+        this.servings = ((Long) in.readValue((Long.class.getClassLoader())));
+        this.image = ((String) in.readValue((String.class.getClassLoader())));
     }
 
     public Long getId() {
@@ -96,32 +96,16 @@ public class Recipe implements Parcelable {
         return ingredients;
     }
 
-    public void setIngredients(List<Ingredient> ingredients) {
-        this.ingredients = ingredients;
-    }
-
     public List<Step> getSteps() {
         return steps;
-    }
-
-    public void setSteps(List<Step> steps) {
-        this.steps = steps;
     }
 
     public Long getServings() {
         return servings;
     }
 
-    public void setServings(Long servings) {
-        this.servings = servings;
-    }
-
     public String getImage() {
         return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
     }
 
     public void writeToParcel(Parcel dest, int flags) {

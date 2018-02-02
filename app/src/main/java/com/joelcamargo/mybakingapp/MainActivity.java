@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Recipe> mRecipeList;
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

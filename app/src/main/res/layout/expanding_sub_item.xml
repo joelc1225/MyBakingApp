@@ -1,29 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:gravity="center_horizontal"
-    xmlns:tools="http://schemas.android.com/tools">
 
-    <TextView
-        android:id="@+id/measure_textView"
+
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:layout_gravity="center_horizontal"
-        tools:text="6 TBLSP"/>
+        android:padding="8dp">
 
-    <TextView
-        android:id="@+id/ingredientName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:layout_gravity="center_horizontal"
-        android:textSize="16sp"
-        android:maxWidth="450dp"
-        tools:text="Ingredient name"
-        android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/measure_textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:gravity="start"
+            android:textAlignment="textStart"
+            android:textSize="16sp"
+            tools:targetApi="o"
+            tools:text="6 TBLSP"/>
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/ingredientNameTextView"
+            android:layout_width="250dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:autoSizeTextType="uniform"
+            android:layout_toStartOf="@id/measure_textView"
+            android:gravity="end"
+            android:layout_alignParentRight="true"
+            android:maxLines="2"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:targetApi="o"
+            tools:text="Ingredient name"
+            android:layout_alignParentEnd="true"
+            android:layout_toLeftOf="@id/measure_textView" />
+
+    </RelativeLayout>
+

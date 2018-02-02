@@ -1,11 +1,8 @@
 package com.joelcamargo.mybakingapp;
 
 
-import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,22 +29,7 @@ public class RecipeInfoFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        Log.d("onCreateVIew", " Reached!!!!");
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_recipe_info, container, false);
     }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        Log.d("onAttach", " reached!!!");
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        Log.d("onActivity", " Created reached!!!!");
-    }
-
-
 }

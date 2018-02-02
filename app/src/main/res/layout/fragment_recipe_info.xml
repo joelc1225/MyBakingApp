@@ -5,16 +5,22 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-
-    <!-- Will turn this textView into expandable later-->
     <com.diegodobelo.expandingview.ExpandingList
-        android:id="@+id/expanding_list_main"
+        android:id="@+id/expanding_list_diego"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAlignment="center"
-        android:padding="16dp"
-        android:layout_margin="8dp"
+        android:padding="8dp"
+        android:layout_marginTop="64dp"
         android:textSize="20sp"/>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/ingredientsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp">
+
+        </android.support.v7.widget.RecyclerView>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/steps_recyclerView"

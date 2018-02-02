@@ -7,4 +7,6 @@
     <string name="ingredient_list_header">Ingredient List</string>
     <string name="step_number_header">Step</string>
     <string name="measure_string_format">%1$s %2$s</string>
+    <string name="prev_step_label">PREV STEP</string>
+    <string name="next_step_label">NEXT STEP</string>
 </resources>

@@ -30,4 +30,23 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"/>
 
+    <TextView
+        android:id="@+id/empty_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        tools:text="Unable to find recipes. Try again later"
+        android:text="@string/empty_view_message"
+        android:textSize="20sp"/>
+
+    <Button
+        android:id="@+id/retry_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Retry"
+        android:text="@string/retry_button_text"
+        android:layout_marginBottom="160dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"/>
+
 </RelativeLayout>

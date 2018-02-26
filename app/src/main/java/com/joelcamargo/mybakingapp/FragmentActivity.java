@@ -1,5 +1,7 @@
 package com.joelcamargo.mybakingapp;
 
+import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
@@ -15,12 +17,15 @@ import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.diegodobelo.expandingview.ExpandingItem;
 import com.diegodobelo.expandingview.ExpandingList;
+import com.google.gson.reflect.TypeToken;
 import com.joelcamargo.mybakingapp.model.Ingredient;
 import com.joelcamargo.mybakingapp.model.Recipe;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import butterknife.BindView;
@@ -44,8 +49,14 @@ public class FragmentActivity extends AppCompatActivity
     RecyclerView mStepsRecyclerView;
     @BindView(R.id.ingredientsRecyclerView)
     RecyclerView mIngredientsRecyclerView;
-    // this imageView doesn't work with butterknife since its a part of the expandingView library
-    ImageView mListArrow;
+    @Nullable
+    @BindView(R.id.empty_view_step_info)
+    TextView mEmptyViewStepInfo;
+    @BindView(R.id.heart_imageView)
+    ImageView mHeartImageView;
+
+    // this imageView doesn't work with butterknife since its a part of 3rd party expandingView
+    private ImageView mListArrow;
 
     // * * THIS IS DIEGOS EXPANDING STUFF
     ExpandingList mExpandingList;
@@ -59,19 +70,33 @@ public class FragmentActivity extends AppCompatActivity
 
     RotateAnimation mAnim;
     RotateAnimation mAnim2;
+    private long mFavoriteRecipeId = 0;
+    private Toast mToast;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_activity);
+
         ButterKnife.bind(this);
         setSupportActionBar(mFragmentToolBar);
+
+        // gets shared prefs and sets most recent favorite recipe id
+        SharedPreferences settings = getSharedPreferences("prefs", 0);
+        mFavoriteRecipeId = settings.getLong("faveRecipeId", 0);
+
+        // forces landscape layout if in two pane mode
+        if (MainActivity.mTwoPane) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
 
         // Gets the bundle containing our Recipe object
         Bundle bundle = getIntent().getExtras();
 
         if (bundle != null) {
             mReceivedRecipe = bundle.getParcelable("recipe");
+        } else {
+            Log.e("ERROR!!", " NO RECIPE INFO RECEIVED");
         }
 
         // Creates and applies the RecipeInfoFragment
@@ -80,6 +105,7 @@ public class FragmentActivity extends AppCompatActivity
         FragmentTransaction ft = fm.beginTransaction()
                 .add(mRecipeFragment, "currentRecipe");
         ft.commit();
+
 
         // applies the settings for our layoutManager and sets it on the recyclerView
         mLinearLayoutManager = new LinearLayoutManager(this);
@@ -97,15 +123,64 @@ public class FragmentActivity extends AppCompatActivity
     }
 
     // interface implemented from RecipeInfoFragment to update views in that fragment
-    @Override
-    public void updateInfoViews(Recipe recipe) {
+    private void updateInfoViews(Recipe recipe) {
         // Sets the recipe name in the toolbar
         String recipeName = mReceivedRecipe.getName();
         mFragmentToolBar.setTitle(recipeName);
+        mFragmentToolBar.setTitleTextAppearance(getApplicationContext(), R.style.ToolBar_Text_Font);
+
+        // sets heart imageView according to value saved in shared prefs
+        if (mReceivedRecipe.getId() == mFavoriteRecipeId) {
+            mHeartImageView.setImageResource(R.drawable.ic_favorite__heart_filled_24dp);
+            mHeartImageView.setColorFilter(getResources().getColor(R.color.red));
+        }
+
+
+        mHeartImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (mToast != null) {
+                    mToast.cancel();
+                }
+
+                if (mFavoriteRecipeId != mReceivedRecipe.getId()) {
+                    mHeartImageView.setImageResource(R.drawable.ic_favorite__heart_filled_24dp);
+                    mHeartImageView.setColorFilter(getResources().getColor(R.color.red));
+                    mFavoriteRecipeId = mReceivedRecipe.getId();
+
+                    mToast = Toast.makeText(getApplicationContext(),
+                            "Added to widget",
+                            Toast.LENGTH_SHORT);
+                    mToast.show();
+
+                    // updates recipe on widget
+                    WidgetUpdatingService.startActionUpdateWidget(getApplicationContext(), mReceivedRecipe);
+
+                } else {
+
+                    if (mToast != null) {
+                        mToast.cancel();
+                    }
+
+                    mHeartImageView.setImageResource(R.drawable.ic_favorite_border_black_24dp);
+                    mHeartImageView.setColorFilter(getResources().getColor(R.color.white));
+                    mFavoriteRecipeId = 0;
+
+                    mToast = Toast.makeText(getApplicationContext(),
+                            "Will stay on widget until new favorite is selected",
+                            Toast.LENGTH_LONG);
+
+                    mToast.show();
+                }
+
+            }
+        });
 
         // Gets the ingredient array to create the sub-items below
         ArrayList<Ingredient> ingredientArrayList = (ArrayList<Ingredient>) recipe.getIngredients();
         int ingredientArraySize = ingredientArrayList.size();
+        Log.d("ARRAYSIZE", " " + ingredientArraySize);
 
         // Creates expanding list
         mExpandingList = (ExpandingList) findViewById(R.id.expanding_list_diego);
@@ -158,20 +233,57 @@ public class FragmentActivity extends AppCompatActivity
     }
 
     // helper method that opens the step fragment for clicked step item
-    public void displayStepInfoFragment(int clickedPosition) {
+    private void displayStepInfoFragment(int clickedPosition) {
 
-        mStepInfoFragment = new StepInfoFragment();
-        Bundle args = new Bundle();
-        args.putParcelable("recipe", mReceivedRecipe);
-        args.putInt("position", clickedPosition);
-        mStepInfoFragment.setArguments(args);
+        if (!MainActivity.mTwoPane) {
+            mStepInfoFragment = new StepInfoFragment();
+            Bundle args = new Bundle();
+            args.putParcelable("recipe", mReceivedRecipe);
+            args.putInt("position", clickedPosition);
+            mStepInfoFragment.setArguments(args);
 
-        FragmentManager fm = getSupportFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction()
-                .add(R.id.mainFragmentContainer, mStepInfoFragment, "main_tag")
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .addToBackStack("main_stack");
-        ft.commit();
+            FragmentManager fm = getSupportFragmentManager();
+            FragmentTransaction ft = fm.beginTransaction()
+                    .add(R.id.mainFragmentContainer, mStepInfoFragment, "step_tag")
+                    .addToBackStack("step_backStack")
+                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            ft.commit();
+        } else {
+
+            if (mEmptyViewStepInfo != null) {
+                mEmptyViewStepInfo.setVisibility(View.INVISIBLE);
+            }
+
+            FragmentManager fm = getSupportFragmentManager();
+
+            StepInfoFragment oldFragToRemove =
+                    (StepInfoFragment) fm.findFragmentById(R.id.step_info_fragment_container);
+
+            mStepInfoFragment = new StepInfoFragment();
+            Bundle args = new Bundle();
+            args.putParcelable("recipe", mReceivedRecipe);
+            args.putInt("position", clickedPosition);
+            mStepInfoFragment.setArguments(args);
+
+            if (oldFragToRemove == null) {
+                FragmentTransaction ft = fm.beginTransaction()
+                        .add(R.id.step_info_fragment_container, mStepInfoFragment, "step_tag")
+                        .addToBackStack("step_backStack")
+                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                ft.commit();
+            } else {
+                FragmentTransaction ft = fm.beginTransaction()
+                        .add(R.id.step_info_fragment_container, mStepInfoFragment, "step_tag")
+                        .show(mStepInfoFragment)
+                        .hide(oldFragToRemove)
+                        .remove(oldFragToRemove)
+                        .addToBackStack("step_backStack")
+                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                ft.commit();
+            }
+
+        }
+
     }
 
     @Override
@@ -180,7 +292,7 @@ public class FragmentActivity extends AppCompatActivity
     }
 
     // updates anim to updated drawable for the List Arrow imageView
-    public void makeAnims(){
+    private void makeAnims() {
         mAnim = new RotateAnimation(180, 0, Animation.RELATIVE_TO_SELF,
                 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         mAnim.setDuration(300);
@@ -199,9 +311,29 @@ public class FragmentActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        FragmentManager fm = getSupportFragmentManager();
-        fm.popBackStackImmediate("main_stack", FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        fm.beginTransaction().remove(fm.findFragmentById(R.id.mainFragmentContainer)).commit();
+        if (!MainActivity.mTwoPane) {
+            FragmentManager fm = getSupportFragmentManager();
+            if (fm.findFragmentById(R.id.mainFragmentContainer) != null) {
+                fm.beginTransaction().remove(fm.findFragmentById(R.id.mainFragmentContainer)).commit();
+            }
+        } else {
+            finish();
+        }
+    }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        // creates Editor object to make preference changes.
+        SharedPreferences settings = getSharedPreferences("prefs", 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putLong("faveRecipeId", mFavoriteRecipeId);
+        Type type = new TypeToken<Recipe>() {
+        }.getType();
+        editor.putString("recipe", ConverterHelper.convertToJsonString(mReceivedRecipe, type));
+
+        // Commit the edits!
+        editor.apply();
     }
 }

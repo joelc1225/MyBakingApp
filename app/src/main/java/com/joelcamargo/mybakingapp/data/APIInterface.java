@@ -12,6 +12,7 @@ import retrofit2.http.GET;
  */
 
 // Interface just for types of API calls. We only need a GET call to get the JSON data we need.
+@SuppressWarnings("DefaultFileTemplate")
 public interface APIInterface {
 
     @GET("baking.json")

@@ -23,10 +23,11 @@ import butterknife.ButterKnife;
  * Created by joelcamargo on 12/1/17.
  */
 
+@SuppressWarnings("DefaultFileTemplate")
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.MyViewHolder> {
 
-    private ArrayList<Recipe> recipeArrayList;
-    private Context mContext;
+    private final ArrayList<Recipe> recipeArrayList;
+    private final Context mContext;
 
     // Constructor
     public RecipeAdapter(ArrayList<Recipe> recipes, Context context) {
@@ -43,7 +44,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.MyViewHold
     }
 
     @Override
-    public void onBindViewHolder(RecipeAdapter.MyViewHolder holder, final int position) {
+    public void onBindViewHolder(final RecipeAdapter.MyViewHolder holder, final int position) {
 
         final Recipe recipe = recipeArrayList.get(position);
         // gets the image URI for the image
@@ -77,6 +78,11 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.MyViewHold
         });
     }
 
+    @Override
+    public int getItemCount() {
+        return recipeArrayList.size();
+    }
+
     public class MyViewHolder extends RecyclerView.ViewHolder {
         // binds the views needed for this adapter
         @BindView(R.id.recipeImageBackground)
@@ -88,11 +94,5 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.MyViewHold
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
-    }
-
-
-    @Override
-    public int getItemCount() {
-        return recipeArrayList.size();
     }
 }

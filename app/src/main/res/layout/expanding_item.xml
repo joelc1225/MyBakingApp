@@ -12,7 +12,8 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
         android:textSize="22sp"
-        tools:text="Ingredients List"/>
+        tools:text="Ingredients List"
+        tools:ignore="RelativeOverlap" />
 
     <ImageView
         android:id="@+id/listArrow"
@@ -23,6 +24,7 @@
         android:layout_centerVertical="true"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="36dp"
-        tools:src="@drawable/ic_keyboard_arrow_down_black_24dp"/>
+        tools:src="@drawable/ic_keyboard_arrow_down_black_24dp"
+        tools:ignore="ContentDescription" />
 
 </RelativeLayout>

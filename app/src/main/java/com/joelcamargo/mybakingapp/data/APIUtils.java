@@ -6,6 +6,7 @@ package com.joelcamargo.mybakingapp.data;
 
 // Utils class that contains a helper method that combines the retrofit client
 // and API interface with one method
+@SuppressWarnings("DefaultFileTemplate")
 public class APIUtils {
     private static final String RECIPES_BASE_URL =
             "https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/";

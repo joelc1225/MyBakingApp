@@ -1,0 +1,24 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/widget_recipe_name_textView"
+        style="@style/TextAppearance.AppCompat.Headline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="Recipe Name"
+        android:padding="8dp"
+        android:textAlignment="center"
+        android:background="#42a5f5"/>
+
+    <ListView
+        android:id="@+id/widget_listView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFF">
+    </ListView>
+
+</LinearLayout>

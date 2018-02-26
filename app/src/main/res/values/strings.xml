@@ -1,12 +1,17 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">My Baking App</string>
 
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hello_blank_fragment" tools:keep="@string/hello_blank_fragment">Hello blank fragment</string>
     <string name="placeholder_title">Recipe name updated at runtime</string>
     <string name="ingredient_list_header">Ingredient List</string>
     <string name="step_number_header">Step</string>
     <string name="measure_string_format">%1$s %2$s</string>
     <string name="prev_step_label">PREV STEP</string>
     <string name="next_step_label">NEXT STEP</string>
+    <string name="appwidget_text" tools:keep="@string/appwidget_text">EXAMPLE</string>
+    <string name="add_widget" tools:keep="@string/add_widget">Add widget</string>
+    <string name="empty_view_message">Unable to find recipes. Try again later</string>
+    <string name="retry_button_text">Retry</string>
+    <string name="empty_view_step_info_message">Click on a recipe step to display info</string>
 </resources>

@@ -88,20 +88,12 @@ public class Recipe implements Parcelable {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public List<Ingredient> getIngredients() {
         return ingredients;
     }
 
     public List<Step> getSteps() {
         return steps;
-    }
-
-    public Long getServings() {
-        return servings;
     }
 
     public String getImage() {

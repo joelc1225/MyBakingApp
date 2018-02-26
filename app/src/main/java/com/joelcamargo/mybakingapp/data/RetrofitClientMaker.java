@@ -1,7 +1,8 @@
 package com.joelcamargo.mybakingapp.data;
 
+import java.util.concurrent.TimeUnit;
+
 import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -11,16 +12,16 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 // Helper class that creates the retrofit client with an interceptor to help log calls and debug
 // if necessary
-public class RetrofitClientMaker {
+@SuppressWarnings({"DefaultFileTemplate", "SameParameterValue"})
+class RetrofitClientMaker {
 
     private static Retrofit retrofitClient = null;
 
     public static Retrofit getClient(String baseUrl) {
 
-        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(interceptor)
+                .connectTimeout(15, TimeUnit.SECONDS)
+                .readTimeout(15, TimeUnit.SECONDS)
                 .build();
 
         if (retrofitClient == null) {

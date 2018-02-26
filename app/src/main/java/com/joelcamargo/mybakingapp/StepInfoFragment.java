@@ -2,19 +2,24 @@ package com.joelcamargo.mybakingapp;
 
 
 import android.annotation.SuppressLint;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,26 +57,33 @@ import butterknife.ButterKnife;
 /**
  * A simple {@link Fragment} subclass.
  */
+@SuppressWarnings("ConstantConditions")
 public class StepInfoFragment extends Fragment implements Player.EventListener {
 
+    @SuppressWarnings("WeakerAccess")
     @BindView(R.id.description_textView)
     TextView mDescriptionTextView;
+    @SuppressWarnings("WeakerAccess")
+    @Nullable
     @BindView(R.id.previous_button)
     Button mPreviousButton;
+    @SuppressWarnings("WeakerAccess")
+    @Nullable
     @BindView(R.id.next_button)
     Button mNextButton;
+    @SuppressWarnings("WeakerAccess")
     @BindView(R.id.simple_exo_player)
     SimpleExoPlayerView mSimpleExoPlayerView;
-    SimpleExoPlayer mPlayer;
-    Recipe mReceivedRecipe;
-    int mClickedPosition;
-    Uri mMediaUri;
-    DataSource.Factory mMediaDataSourceFactory;
-    MediaSessionCompat mMediaSession;
-    PlaybackStateCompat.Builder mStateBuilder;
-    MediaSource mMediaSource;
-    StepInfoFragment mOldFragmentToHide;
-    StepInfoFragment mNewStepInfoFragment;
+    private SimpleExoPlayer mPlayer;
+    private Recipe mReceivedRecipe;
+    private int mClickedPosition;
+    private MediaSessionCompat mMediaSession;
+    private PlaybackStateCompat.Builder mStateBuilder;
+    private MediaSource mMediaSource;
+    private StepInfoFragment mOldFragmentToHide;
+    private boolean mHasVideo;
+    private boolean mIsLandscape;
+    private long mPlayerPosition;
 
 
     public StepInfoFragment() {
@@ -79,14 +91,17 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         // inflates layout
-        View view = inflater.inflate(R.layout.step_info__with_player_layout, container, false);
+        View view = inflater.inflate(R.layout.step_info_with_player_layout, container, false);
         ButterKnife.bind(this, view);
 
-        // doesn't allow for views in background freagment to be clickable
+        // retains fragment across orientation change so it doesn't re-create the fragment on change
+        setRetainInstance(true);
+
+        // doesn't allow for views in background fragment to be clickable
         view.setOnTouchListener(new View.OnTouchListener() {
             @SuppressLint("ClickableViewAccessibility")
             @Override
@@ -109,13 +124,34 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
         }
 
         // sets text on buttons and hides when necessary
-        mPreviousButton.setText(R.string.prev_step_label);
-        mNextButton.setText(R.string.next_step_label);
-        if (mClickedPosition == 0) {
-            mPreviousButton.setVisibility(View.GONE);
-        } else if (mClickedPosition == mReceivedRecipe.getSteps().size() - 1) {
-            mNextButton.setVisibility(View.GONE);
+        if (!MainActivity.mTwoPane) {
+            assert mPreviousButton != null;
+            mPreviousButton.setText(R.string.prev_step_label);
+            mNextButton.setText(R.string.next_step_label);
+            if (mClickedPosition == 0) {
+                mPreviousButton.setVisibility(View.GONE);
+            } else if (mClickedPosition == mReceivedRecipe.getSteps().size() - 1) {
+                mNextButton.setVisibility(View.GONE);
+            }
         }
+
+
+        // make video fullscreen if current step has video and screen is landscape
+        if (mHasVideo && mIsLandscape) {
+            // hides views that arent needed
+            mDescriptionTextView.setVisibility(View.GONE);
+            mNextButton.setVisibility(View.GONE);
+            mPreviousButton.setVisibility(View.GONE);
+            ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+
+            // creates the new layout params  for player and sets them
+            RelativeLayout.LayoutParams params =
+                    (RelativeLayout.LayoutParams) mSimpleExoPlayerView.getLayoutParams();
+            params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            params.topMargin = 0;
+            mSimpleExoPlayerView.setLayoutParams(params);
+        }
+
 
         // Creates media session used for ExoPlayer
         initializeMediaSession();
@@ -125,10 +161,13 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
     }
 
     // helper method that inputs data to views
-    public void updateStepInfoViews(Recipe recipe, final int clickedPosition) {
+    private void updateStepInfoViews(Recipe recipe, final int clickedPosition) {
         final ArrayList<Step> steps = (ArrayList<Step>) recipe.getSteps();
         Step currentStep = steps.get(clickedPosition);
         String stepDescription = currentStep.getDescription();
+
+        // update boolean to tell whether there's a video or not
+        mHasVideo = !currentStep.getVideoURL().isEmpty();
 
         mDescriptionTextView.setText(stepDescription);
 
@@ -136,7 +175,7 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
         if (!currentStep.getVideoURL().isEmpty()) {
             // sets global Uri to set up player
             mSimpleExoPlayerView.setVisibility(View.VISIBLE);
-            mMediaUri = Uri.parse(currentStep.getVideoURL());
+            Uri mMediaUri = Uri.parse(currentStep.getVideoURL());
             initializePlayer(mMediaUri);
         } else {
             // Hides the player in case there is no video media to display
@@ -144,39 +183,47 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
             mDescriptionTextView.setTextSize(28);
         }
 
-        mPreviousButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (clickedPosition != 0) {
-                    releasePlayer();
-                    mSimpleExoPlayerView.setVisibility(View.GONE);
-                    mClickedPosition = clickedPosition - 1;
-                    displayNewStepInfoFragment(mClickedPosition);
+        if (!MainActivity.mTwoPane) {
+            mPreviousButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (clickedPosition != 0) {
+                        releasePlayer();
+                        mSimpleExoPlayerView.setVisibility(View.GONE);
+                        mClickedPosition = clickedPosition - 1;
+                        displayNewStepInfoFragment(mClickedPosition);
+                    }
                 }
-            }
-        });
+            });
 
-        mNextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (clickedPosition != steps.size() - 1) {
-                    releasePlayer();
-                    mSimpleExoPlayerView.setVisibility(View.GONE);
-                    mClickedPosition = clickedPosition + 1;
-                    displayNewStepInfoFragment(mClickedPosition);
+            mNextButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (clickedPosition != steps.size() - 1) {
+                        releasePlayer();
+                        mSimpleExoPlayerView.setVisibility(View.GONE);
+                        mClickedPosition = clickedPosition + 1;
+                        displayNewStepInfoFragment(mClickedPosition);
+                    }
                 }
-            }
-        });
+            });
+        }
+
+
     }
 
     // helper method to set up simpleExoPlayer
-    public void initializePlayer(Uri mediaUri) {
+    private void initializePlayer(Uri mediaUri) {
         if (mPlayer == null) {
             // create instance of exoPlayer with default settings
             TrackSelector trackSelector = new DefaultTrackSelector();
             LoadControl loadControl = new DefaultLoadControl();
             RenderersFactory renderers = new DefaultRenderersFactory(getContext());
             mPlayer = ExoPlayerFactory.newSimpleInstance(renderers, trackSelector, loadControl);
+            // sets to recent position if orientation changed mid-session
+            if (mPlayerPosition != 0) {
+                mPlayer.seekTo(mPlayerPosition);
+            }
             mSimpleExoPlayerView.setPlayer(mPlayer);
 
             // builds media source then prepares player with media
@@ -190,8 +237,9 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
     }
 
     // method to release player and free up resources
-    public void releasePlayer() {
+    private void releasePlayer() {
         if (mPlayer != null) {
+            mPlayerPosition = mPlayer.getCurrentPosition();
             mMediaSource.releaseSource();
             mMediaSession.release();
             mPlayer.clearVideoSurface();
@@ -206,10 +254,9 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
     private MediaSource buildMediaSource(Uri uri) {
 
         // initializes some player defaults to use in initialization of media source
-        mMediaDataSourceFactory =
-                new DefaultDataSourceFactory(getActivity().getApplicationContext(),
-                        Util.getUserAgent(getContext(),
-                                "bakingApp"));
+        DataSource.Factory mMediaDataSourceFactory = new DefaultDataSourceFactory(getActivity().getApplicationContext(),
+                Util.getUserAgent(getContext(),
+                        "bakingApp"));
 
         DefaultExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
         return new ExtractorMediaSource(uri,
@@ -292,25 +339,8 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
 
     }
 
-    private class mySessionCallback extends MediaSessionCompat.Callback {
-        @Override
-        public void onPlay() {
-            mPlayer.setPlayWhenReady(true);
-        }
-
-        @Override
-        public void onPause() {
-            mPlayer.setPlayWhenReady(false);
-        }
-
-        @Override
-        public void onSkipToPrevious() {
-            mPlayer.seekTo(0);
-        }
-    }
-
     // Sets up media session
-    public void initializeMediaSession() {
+    private void initializeMediaSession() {
 
         mMediaSession = new MediaSessionCompat(getActivity().getApplicationContext(), "TAG");
         mMediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS);
@@ -327,7 +357,7 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
     }
 
     // helper method that opens the step fragment for clicked step item
-    public void displayNewStepInfoFragment(int clickedPosition) {
+    private void displayNewStepInfoFragment(int clickedPosition) {
 
         // For some reason i was getting some lag when adding fragments so i needed to use the
         // Show/Hide methods and a timer to remove the fragment i didn't need anymore
@@ -336,7 +366,7 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
         mOldFragmentToHide = (StepInfoFragment) fm.findFragmentById(R.id.mainFragmentContainer);
 
         // make the new fragment and set it's arguments
-        mNewStepInfoFragment = new StepInfoFragment();
+        StepInfoFragment mNewStepInfoFragment = new StepInfoFragment();
         Bundle args = new Bundle();
         args.putParcelable("recipe", mReceivedRecipe);
         args.putInt("position", clickedPosition);
@@ -360,5 +390,52 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
                         .remove(mOldFragmentToHide).commit();
             }
         }, 1000);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // checking the orientation of screen
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            Log.d("ORIENTATION", " LANDSCAPE");
+
+            // sets the boolean tracker used to adjust layout on orientation
+            mIsLandscape = true;
+
+        } else if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            Log.d("ORIENTATION", " PORTRAIT");
+
+            // sets the boolean tracker used to adjust layout on orientation
+            mIsLandscape = false;
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        // saves recipe to inflate views on orientation change && pause/stop
+        outState.putParcelable("recipe", mReceivedRecipe);
+        outState.putBoolean("hasVideo", mHasVideo);
+        outState.putBoolean("isLandscape", mIsLandscape);
+        outState.putLong("playerPosition", mPlayerPosition);
+    }
+
+    private class mySessionCallback extends MediaSessionCompat.Callback {
+        @Override
+        public void onPlay() {
+            mPlayer.setPlayWhenReady(true);
+        }
+
+        @Override
+        public void onPause() {
+            mPlayer.setPlayWhenReady(false);
+        }
+
+        @Override
+        public void onSkipToPrevious() {
+            mPlayer.seekTo(0);
+        }
     }
 }

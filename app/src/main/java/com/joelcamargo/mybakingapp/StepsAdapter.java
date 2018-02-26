@@ -20,19 +20,20 @@ import butterknife.ButterKnife;
  * Created by joelcamargo on 12/22/17.
  */
 
+@SuppressWarnings("DefaultFileTemplate")
 public class StepsAdapter extends RecyclerView.Adapter<StepsAdapter.StepViewHolder> {
 
-    private ArrayList<Step> mStepArrayList;
-    private Recipe mRecipe;
-    private Context mContext;
     private static StepRecyclerViewClickListener mClickListener;
+    private ArrayList<Step> mStepArrayList;
+    private final Recipe mRecipe;
+    private final Context mContext;
 
 
     // Constructor
     public StepsAdapter(Context context, Recipe recipe, StepRecyclerViewClickListener listener) {
         this.mRecipe = recipe;
         this.mContext = context;
-        this.mClickListener = listener;
+        mClickListener = listener;
     }
 
     @Override
@@ -50,7 +51,7 @@ public class StepsAdapter extends RecyclerView.Adapter<StepsAdapter.StepViewHold
         // grabs the step from the clicked position
         final Step currentStep = mStepArrayList.get(position);
         // grabs the integer value of the current step to display in view
-        if (position == 0){
+        if (position == 0) {
 
             holder.mStepNumberTextView.setText("");
         } else {
@@ -69,6 +70,12 @@ public class StepsAdapter extends RecyclerView.Adapter<StepsAdapter.StepViewHold
     public int getItemCount() {
         mStepArrayList = (ArrayList<Step>) mRecipe.getSteps();
         return mStepArrayList.size();
+    }
+
+    public interface StepRecyclerViewClickListener {
+
+        @SuppressWarnings("unused")
+        void stepRecyclerViewListItemCLick(View v, int position);
     }
 
     public class StepViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -91,10 +98,5 @@ public class StepsAdapter extends RecyclerView.Adapter<StepsAdapter.StepViewHold
         public void onClick(View view) {
             mClickListener.stepRecyclerViewListItemCLick(view, this.getLayoutPosition());
         }
-    }
-
-    public interface StepRecyclerViewClickListener {
-
-        void stepRecyclerViewListItemCLick(View v, int position);
     }
 }

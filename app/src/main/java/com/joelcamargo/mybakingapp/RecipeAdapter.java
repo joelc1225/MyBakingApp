@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -51,7 +52,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.MyViewHold
         String imageUri = recipe.getImage();
 
         // checks if string uri is valid before trying to load into picasso
-        if (!imageUri.isEmpty()) {
+        if (!TextUtils.isEmpty(imageUri)) {
             Log.d("has image", " uri OK!!");
             Picasso.with(mContext).load(imageUri)
                     .placeholder(R.drawable.ic_favorite_border_black_24dp)

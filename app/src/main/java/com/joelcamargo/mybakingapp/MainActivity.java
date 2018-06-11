@@ -1,6 +1,5 @@
 package com.joelcamargo.mybakingapp;
 
-import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -57,11 +56,6 @@ public class MainActivity extends AppCompatActivity {
         // check if in two pane mode
         mTwoPane = findViewById(R.id.two_pane_layout) != null;
         Log.d("onCreate,Two Pane Mode?", " " + mTwoPane);
-
-        // forces landscape layout if in two pane mode
-        if (mTwoPane) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        }
 
         // If recipe list is in memory from last app launch, dont make API call
         GridLayoutManager mGridLayoutManager;

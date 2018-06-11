@@ -19,6 +19,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,6 +47,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.joelcamargo.mybakingapp.model.Recipe;
 import com.joelcamargo.mybakingapp.model.Step;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -74,6 +76,8 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.simple_exo_player)
     SimpleExoPlayerView mSimpleExoPlayerView;
+    @BindView(R.id.thumbnailIV)
+    ImageView mThumnbnailIV;
     private SimpleExoPlayer mPlayer;
     private Recipe mReceivedRecipe;
     private int mClickedPosition;
@@ -84,6 +88,7 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
     private boolean mHasVideo;
     private boolean mIsLandscape;
     private long mPlayerPosition;
+    private Uri mMediaUri;
 
 
     public StepInfoFragment() {
@@ -140,8 +145,13 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
         if (mHasVideo && mIsLandscape) {
             // hides views that arent needed
             mDescriptionTextView.setVisibility(View.GONE);
-            mNextButton.setVisibility(View.GONE);
-            mPreviousButton.setVisibility(View.GONE);
+            if (mNextButton != null){
+                mNextButton.setVisibility(View.GONE);
+            }
+            if (mPreviousButton !=  null) {
+                mPreviousButton.setVisibility(View.GONE);
+            }
+
             ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
 
             // creates the new layout params  for player and sets them
@@ -166,8 +176,9 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
         Step currentStep = steps.get(clickedPosition);
         String stepDescription = currentStep.getDescription();
 
-        // update boolean to tell whether there's a video or not
+        // update boolean to tell whether there's a video/thumbnail or not
         mHasVideo = !currentStep.getVideoURL().isEmpty();
+        boolean mHasThumbnail = !currentStep.getThumbnailURL().isEmpty();
 
         mDescriptionTextView.setText(stepDescription);
 
@@ -175,12 +186,21 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
         if (!currentStep.getVideoURL().isEmpty()) {
             // sets global Uri to set up player
             mSimpleExoPlayerView.setVisibility(View.VISIBLE);
-            Uri mMediaUri = Uri.parse(currentStep.getVideoURL());
+            mMediaUri = Uri.parse(currentStep.getVideoURL());
             initializePlayer(mMediaUri);
         } else {
             // Hides the player in case there is no video media to display
             mSimpleExoPlayerView.setVisibility(View.GONE);
             mDescriptionTextView.setTextSize(28);
+        }
+
+        // check if there's a thumbnail or not. if so, adds image to imageview
+        if (mHasThumbnail) {
+            mThumnbnailIV.setVisibility(View.VISIBLE);
+            String url = currentStep.getThumbnailURL();
+            Picasso.with(getContext()).load(url).into(mThumnbnailIV);
+        } else {
+            mThumnbnailIV.setVisibility(View.GONE);
         }
 
         if (!MainActivity.mTwoPane) {
@@ -278,6 +298,14 @@ public class StepInfoFragment extends Fragment implements Player.EventListener {
         super.onPause();
         releasePlayer();
         mMediaSession.release();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mMediaUri != null) {
+            initializePlayer(mMediaUri);
+        }
     }
 
     // EXOPLAYER listener stuff

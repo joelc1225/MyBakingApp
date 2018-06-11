@@ -20,9 +20,18 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/simple_exo_player"
         android:layout_centerInParent="true"
-        android:layout_margin="36dp"
+        android:layout_margin="28dp"
         android:textSize="18sp"
         tools:text="This is a step description for the current step. Mix the ingredients and mix it all together. Then crack the eggs and mix it in along with the oil and batter and everything else. blah blah blah" />
 
+    <ImageView
+        android:id="@+id/thumbnailIV"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="8dp"
+        tools:src="@mipmap/ic_launcher"
+        tools:ignore="ContentDescription" />
 
 </RelativeLayout>

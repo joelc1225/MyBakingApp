@@ -1,16 +1,17 @@
 package com.joelcamargo.mybakingapp;
 
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
@@ -35,6 +36,7 @@ import butterknife.ButterKnife;
  * Created by joelcamargo on 12/19/17.
  */
 
+@SuppressWarnings({"WeakerAccess", "DefaultFileTemplate"})
 public class FragmentActivity extends AppCompatActivity
         implements RecipeInfoFragment.UpdateViewsInterface,
         StepsAdapter.StepRecyclerViewClickListener {
@@ -80,15 +82,11 @@ public class FragmentActivity extends AppCompatActivity
 
         ButterKnife.bind(this);
         setSupportActionBar(mFragmentToolBar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // gets shared prefs and sets most recent favorite recipe id
         SharedPreferences settings = getSharedPreferences("prefs", 0);
         mFavoriteRecipeId = settings.getLong("faveRecipeId", 0);
-
-        // forces landscape layout if in two pane mode
-        if (MainActivity.mTwoPane) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        }
 
         // Gets the bundle containing our Recipe object
         Bundle bundle = getIntent().getExtras();
@@ -183,7 +181,7 @@ public class FragmentActivity extends AppCompatActivity
         Log.d("ARRAYSIZE", " " + ingredientArraySize);
 
         // Creates expanding list
-        mExpandingList = (ExpandingList) findViewById(R.id.expanding_list_diego);
+        mExpandingList = findViewById(R.id.expanding_list_diego);
 
         // Creates the items and applies the data into our expandingLists views
         mItem = mExpandingList.createNewItem(R.layout.expanding_layout);
@@ -335,5 +333,16 @@ public class FragmentActivity extends AppCompatActivity
 
         // Commit the edits!
         editor.apply();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

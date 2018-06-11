@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+@SuppressWarnings("ALL")
 public class Step implements Parcelable {
 
     @SerializedName("id")
@@ -83,6 +84,10 @@ public class Step implements Parcelable {
 
     public String getVideoURL() {
         return videoURL;
+    }
+
+    public String getThumbnailURL() {
+        return thumbnailURL;
     }
 
     public void writeToParcel(Parcel dest, int flags) {
